@@ -1,8 +1,8 @@
 <template>
-    <div class="container mx-auto px-6 py-12 max-w-4xl">
+    <div class="container mx-auto px-6 py-12 max-w-6xl">
         <section v-if="!showResults" class="text-center space-y-8 py-20">
             <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter">
-                Is your startup <span class="text-brand-green">famous</span>?
+                А ваш бренд <span class="text-brand-green">знаменит</span>?
             </h1>
             <p class="text-slate-400 text-lg max-w-xl mx-auto">
                 Мой AI-агент проанализирует узнаваемость вашего бренда и даст
@@ -21,7 +21,7 @@
                 />
                 <button
                     @click="startAnalysis"
-                    :disabled="!startupName || isAnalyzing"
+                    :disabled="!startupName.trim() || isAnalyzing"
                     class="w-full md:w-auto bg-brand-green hover:bg-emerald-500 disabled:opacity-50 text-slate-900 font-bold px-10 py-4 rounded-2xl transition-all flex items-center justify-center gap-2"
                 >
                     <Search v-if="!isAnalyzing" size="20" />
@@ -80,54 +80,68 @@
                     <span
                         class="bg-brand-dark px-4 text-xs font-mono text-slate-500 uppercase tracking-widest"
                     >
-                        Expert Recommendation
+                        Рекомендации от эксперта
                     </span>
                 </div>
             </div>
 
-            <div
-                class="relative p-1 bg-gradient-to-r from-brand-green/30 to-cyan-500/30 rounded-[2.5rem]"
-            >
-                <div class="bg-brand-dark rounded-[2.4rem] p-8 md:p-12">
-                    <div class="flex items-start justify-between mb-8">
-                        <div
-                            class="flex items-center gap-2 text-brand-green font-mono uppercase tracking-widest text-xs"
-                        >
-                            <Bot size="16" /> AI Unsolicited Advice
-                        </div>
-                        <div class="text-[10px] text-slate-600 font-mono">
-                            Ver. 2.0.26
-                        </div>
-                    </div>
-
-                    <div class="min-h-[100px]">
-                        <p
-                            class="text-xl md:text-2xl leading-relaxed text-slate-200 italic font-medium"
-                        >
-                            "{{ currentAdvice.text }}"
-                        </p>
-                    </div>
-
+            <div class="bg-brand-dark rounded-[2.4rem] p-8 md:p-12">
+                <div class="flex items-start justify-between mb-8">
                     <div
-                        class="mt-10 flex flex-col md:flex-row items-center gap-6"
+                        class="flex items-center gap-2 text-brand-green font-mono uppercase tracking-widest text-xs"
                     >
-                        <button
-                            @click="shuffleAdvice"
-                            class="flex items-center gap-2 text-slate-500 hover:text-brand-green transition text-sm font-medium"
-                        >
-                            <RefreshCw
-                                size="16"
-                                :class="{ 'animate-spin': isShuffling }"
-                            />
-                            Сгенерировать другой совет
-                        </button>
-                        <router-link
-                            to="/portfolio"
-                            class="w-full md:w-auto px-8 py-4 bg-white text-slate-900 rounded-2xl font-bold hover:bg-brand-green hover:text-white transition-all text-center"
-                        >
-                            {{ currentAdvice.cta }}
-                        </router-link>
+                        <Bot size="16" /> Непрошенные советы AI
                     </div>
+                    <div class="text-[10px] text-slate-600 font-mono">
+                        Ver. 2.0.26
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <p
+                        class="text-xl md:text-2xl leading-relaxed text-slate-200 italic font-medium"
+                    >
+                        "{{ aiRoast }}"
+                    </p>
+                </div>
+
+                <div class="h-px w-20 bg-brand-green/30 mb-8"></div>
+
+                <div class="mb-10">
+                    <p class="text-slate-400 leading-relaxed max-w-2xl">
+                        {{ aiAdvice }}
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <button
+                        @click="startAnalysis"
+                        class="flex items-center gap-2 text-slate-500 hover:text-brand-green transition text-sm font-medium"
+                    >
+                        <RefreshCw
+                            size="16"
+                            :class="{ 'animate-spin': isShuffling }"
+                        />
+                        Сгенерировать другой совет
+                    </button>
+
+                    <button
+                        @click="startAnalysis"
+                        class="flex items-center gap-2 text-slate-500 hover:text-brand-green transition text-sm font-medium"
+                    >
+                        <TimerReset
+                            size="16"
+                            :class="{ 'animate-spin': isShuffling }"
+                        />
+                        Анализировать другой проект
+                    </button>
+
+                    <a
+                        href="https://timures.me"
+                        class="bg-white text-slate-900 px-8 py-4 rounded-2xl font-bold hover:bg-brand-green hover:text-white transition-all shadow-lg"
+                    >
+                        {{ ctaText }}
+                    </a>
                 </div>
             </div>
         </section>
@@ -136,7 +150,14 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { Search, Loader2, ArrowLeft, Bot, RefreshCw } from "lucide-vue-next";
+import {
+    Search,
+    Loader2,
+    ArrowLeft,
+    Bot,
+    RefreshCw,
+    TimerReset,
+} from "lucide-vue-next";
 
 const startupName = ref("");
 const isAnalyzing = ref(false);
@@ -164,25 +185,12 @@ const reportCards = ref([
     },
 ]);
 
-const advices = [
-    {
-        text: "Пока вы ищете инвестиции, этот парень (автор сайта) может сделать вам дашборд мечты на Vue. Его ставка — честный рынок для Senior-уровня. Это всё равно выгоднее, чем годовая подписка на софт, который вы забыли отменить.",
-        cta: "Нанять, пока он не ушел в Google",
-    },
-    {
-        text: "AI анализ подтверждает: ваш интерфейс просит пощады. 8 лет опыта во Vue — это именно то, что нужно вашему стартапу, чтобы не выглядеть как поделка первокурсника. Минимум для входа — $1500/мес.",
-        cta: "Забронировать Senior-юнита",
-    },
-    {
-        text: "Ваш проект на 12% сексуальнее, если у него есть локализация. У автора есть свой i18n сервис, и он может внедрить его вам за пару вечеров. Ставка адекватная, результат — мгновенный.",
-        cta: "Посмотреть портфолио",
-    },
-];
-
-const currentAdvice = ref(advices[0]);
+const aiRoast = ref("");
+const aiAdvice = ref("");
+const ctaText = ref("Посмотреть портфолио");
 
 const startAnalysis = async () => {
-    if (!startupName.value) return;
+    if (!startupName.value.trim()) return;
 
     isAnalyzing.value = true;
     showResults.value = false; // Сбрасываем старые результаты, если были
@@ -219,10 +227,11 @@ const startAnalysis = async () => {
 
         // Вставляем "роаст" от AI в начало первого совета, чтобы сделать его уникальным
         // Либо создаем временный объект совета
-        currentAdvice.value = {
-            text: `${data.roast}. ${data.advice}`,
-            cta: "Посмотреть опыт разработчика",
-        };
+        // Разделяем данные из ответа
+        aiRoast.value = data.roast;
+        aiAdvice.value = data.advice;
+        // ПРИВЯЗЫВАЕМ ТЕКСТ КНОПКИ
+        ctaText.value = data.cta;
 
         showResults.value = true;
     } catch (error) {
@@ -231,16 +240,6 @@ const startAnalysis = async () => {
     } finally {
         isAnalyzing.value = false;
     }
-};
-
-const shuffleAdvice = () => {
-    isShuffling.value = true;
-    const otherAdvices = advices.filter(
-        (a) => a.text !== currentAdvice.value.text,
-    );
-    currentAdvice.value =
-        otherAdvices[Math.floor(Math.random() * otherAdvices.length)];
-    setTimeout(() => (isShuffling.value = false), 500);
 };
 
 const reset = () => {
