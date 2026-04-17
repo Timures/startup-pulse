@@ -1,0 +1,22 @@
+name: Deploy Nuxt Startup Pulse App
+on:
+  push:
+    branches: [main] # Триггер при пуше в main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd /var/www/startup-pulse  # Путь к твоему проекту
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart startup-pulse-main # Перезапуск процесса в PM2
