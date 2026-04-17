@@ -15,6 +15,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
+            # 1. Подгружаем переменные окружения NVM (чтобы система увидела node, npm и pm2)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
             cd /var/www/startup-pulse  # Путь к твоему проекту
             git pull origin main
             npm install
