@@ -22,6 +22,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Clear old build
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            rm -rf /var/www/startup-pulse/.output
+
       - name: Copy .output to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -31,7 +41,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: ".output/"
           target: "/var/www/startup-pulse/"
-          rm: true # удаляет старый .output перед копированием
+          rm: false
 
       - name: Restart PM2
         uses: appleboy/ssh-action@v1.0.3
