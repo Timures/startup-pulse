@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   runtimeConfig: {
-    groqApiKey: process.env.GROQ_API_KEY,
+    groqApiKey: process.env.NUXT_GROQ_API_KEY,
   },
   compatibilityDate: "2025-07-15",
   devtools: { enabled: false },
