@@ -1,26 +1,48 @@
 name: Deploy Nuxt Startup Pulse App
 on:
   push:
-    branches: [main] # Триггер при пуше в main
+    branches: [main]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: SSH and Deploy
-        uses: appleboy/ssh-action@master
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Copy .output to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          source: ".output/"
+          target: "/var/www/startup-pulse/"
+          rm: true # удаляет старый .output перед копированием
+
+      - name: Restart PM2
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            # 1. Подгружаем переменные окружения NVM (чтобы система увидела node, npm и pm2)
+            set -e
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-            cd /var/www/startup-pulse  # Путь к твоему проекту
-            git pull origin main
-            npm install
-            npm run build
-            pm2 restart startup-pulse-main # Перезапуск процесса в PM2
+            cd /var/www/startup-pulse
+            pm2 startOrRestart ecosystem.config.js
