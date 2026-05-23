@@ -55,4 +55,4 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd /var/www/startup-pulse
-            pm2 startOrRestart ecosystem.config.js
+            pm2 startOrRestart ecosystem.config.cjs
